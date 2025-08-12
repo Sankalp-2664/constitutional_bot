@@ -7,4 +7,5 @@ tiktoken
 python-dotenv
 streamlit
 langchain
+gunicorn
 datetime
