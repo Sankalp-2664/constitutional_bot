@@ -1,3 +1,4 @@
+gunicorn
 fastapi
 uvicorn
 langchain-google-genai
@@ -11,3 +12,4 @@ streamlit
 langchain
 datetime
 langchain_community
+
