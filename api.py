@@ -1,50 +1,64 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
-from scenario_advisor import get_scenario_based_response
 from chatbot import ask_samvidhan
+from scenario_advisor import get_scenario_based_response
 
-app = FastAPI()
+app = FastAPI(
+    title="Samvidhan AI API",
+    description="API for Constitutional Law Q&A and Scenario Analysis",
+    version="1.0.0"
+)
+
+# -------------------- Request Body Models --------------------
+
+class ChatQueryRequest(BaseModel):
+    question: str
 
 class ScenarioRequest(BaseModel):
     scenario: str
 
-class ChatbotRequest(BaseModel):
-    question: str
+# -------------------- Home Route --------------------
 
 @app.get("/")
-async def home():
-    return {
-        "message": "Welcome to the Samvidhan AI API!",
-        "endpoints": {
-            "POST /ask-chatbot": {"question": "string"},
-            "POST /analyze-scenario": {"scenario": "string"}
+def home():
+    return {"message": "✅ Samvidhan AI API is running!"}
+
+# -------------------- Chatbot Endpoint --------------------
+
+@app.post("/chat")
+def ask_constitutional_question(request: ChatQueryRequest):
+    try:
+        answer = ask_samvidhan(request.question)
+        return {
+            "question": request.question,
+            "answer": answer
         }
-    }
-
-@app.post("/analyze-scenario")
-async def analyze_scenario(request: ScenarioRequest):
-    scenario = request.scenario.strip()
-    if not scenario:
-        raise HTTPException(status_code=400, detail="Scenario cannot be empty.")
-
-    try:
-        response = get_scenario_based_response(scenario)
-        return {"response": response}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error analyzing scenario: {str(e)}")
+        return {
+            "error": str(e),
+            "message": "Failed to generate answer for constitutional question."
+        }
 
-@app.post("/ask-chatbot")
-async def ask_chatbot(request: ChatbotRequest):
-    question = request.question.strip()
-    if not question:
-        raise HTTPException(status_code=400, detail="Question cannot be empty.")
+# -------------------- Scenario-Based Analysis Endpoint --------------------
 
+@app.post("/scenario")
+def analyze_scenario(request: ScenarioRequest):
     try:
-        answer = ask_samvidhan(question)
-        return {"answer": answer}
+        response = get_scenario_based_response(request.scenario)
+        return {
+            "scenario": request.scenario,
+            "analysis": response
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting chatbot answer: {str(e)}")
+        return {
+            "error": str(e),
+            "message": "Failed to analyze the legal scenario."
+        }
+    ```
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)
+---
+
+### ✅ How to Run It
+
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
