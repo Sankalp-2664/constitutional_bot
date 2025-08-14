@@ -1,9 +1,16 @@
 import os
+import asyncio
 from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
+
+# Ensure an event loop exists for async gRPC clients
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
 # Load API key
 load_dotenv()
@@ -82,4 +89,5 @@ if __name__ == "__main__":
         query = input("Ask me about the Constitution of India: ")
         if query.lower() == "exit":
             break
+
         print("📜:", ask_samvidhan(query))
